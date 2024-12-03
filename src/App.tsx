@@ -1,24 +1,42 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
+import { addFish, fetchFish } from "./api/fishApi";
+import { Fishing } from "./types/fishing";
 
 function App() {
+  const [newWeight, setNewWeight] = useState(0);
+  const [fishingList, setFishingList] = useState<Fishing[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await fetchFish();
+      setFishingList(data);
+    };
+
+    fetchData();
+  }, []);
+
+  console.log(fishingList);
+
+  const search = async (e: { key: string }) => {
+    if (e.key === "Enter") {
+      const data = await addFish({
+        date: new Date().toISOString(),
+        weight: newWeight,
+      });
+      setFishingList([...fishingList, data]);
+    }
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <input
+        type="number"
+        placeholder="Peso"
+        value={newWeight}
+        onChange={(e) => setNewWeight(Number(e.target.value))}
+        onKeyDown={search}
+      />
     </div>
   );
 }
