@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Fishing } from "../types/fishing";
 
-const API_URL = "http://localhost:4000/fishing";
+const API_URL = process.env.REACT_APP_MOCK_API_URL + "/fishing";
 
 export const fetchFish = async () => {
   const { data } = await axios.get(API_URL);
