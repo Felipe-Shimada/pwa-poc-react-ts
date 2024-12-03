@@ -16,8 +16,6 @@ function App() {
     fetchData();
   }, []);
 
-  console.log(fishingList);
-
   const search = async (e: { key: string }) => {
     if (e.key === "Enter") {
       const data = await addFish({
@@ -30,13 +28,47 @@ function App() {
 
   return (
     <div className="App">
-      <input
-        type="number"
-        placeholder="Peso"
-        value={newWeight}
-        onChange={(e) => setNewWeight(Number(e.target.value))}
-        onKeyDown={search}
-      />
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "10px",
+        }}
+      >
+        <label htmlFor="newWeight">Peso</label>
+        <input
+          type="number"
+          placeholder="Peso"
+          value={newWeight}
+          onChange={(e) => setNewWeight(Number(e.target.value))}
+          onKeyDown={search}
+        />
+      </div>
+
+      <div style={{ padding: "10px", textAlign: "center" }}>
+        <h3>Lista de Pesos</h3>
+        <ul style={{ listStyleType: "none", padding: 0 }}>
+          {fishingList.map((fishing) => (
+            <li
+              key={fishing.id}
+              style={{
+                padding: "8px",
+                margin: "5px auto",
+                maxWidth: "300px",
+                backgroundColor: "#f9f9f9",
+                border: "1px solid #ddd",
+                borderRadius: "5px",
+              }}
+            >
+              <strong>Data:</strong>{" "}
+              {new Date(fishing.date).toLocaleDateString()} <br />
+              <strong>Peso:</strong> {fishing.weight} kg
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
