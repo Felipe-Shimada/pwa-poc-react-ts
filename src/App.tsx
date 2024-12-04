@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { addFish, fetchFish } from "./api/fishApi";
 import { Fishing } from "./types/fishing";
+import generatePDF from "./services/reportGenerator";
 
 function App() {
   const [newWeight, setNewWeight] = useState(0);
@@ -76,6 +77,10 @@ function App() {
             </li>
           ))}
         </ul>
+
+        <button onClick={() => generatePDF(fishingList)}>
+          Gerar Relatório PDF
+        </button>
       </div>
     </div>
   );
