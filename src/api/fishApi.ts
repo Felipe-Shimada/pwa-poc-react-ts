@@ -3,6 +3,8 @@ import { Fishing } from "../types/fishing";
 
 const API_URL = process.env.REACT_APP_MOCK_API_URL + "/fishing";
 
+axios.defaults.headers.common["ngrok-skip-browser-warning"] = "69420";
+
 export const fetchFish = async () => {
   const { data } = await axios.get(API_URL);
 
