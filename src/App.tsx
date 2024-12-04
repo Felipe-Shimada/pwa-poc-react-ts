@@ -18,11 +18,19 @@ function App() {
 
   const search = async (e: { key: string }) => {
     if (e.key === "Enter") {
-      const data = await addFish({
+      const newFish = {
         date: new Date().toISOString(),
         weight: newWeight,
-      });
-      setFishingList([...fishingList, data]);
+      };
+
+      try {
+        const addedFish = await addFish(newFish);
+        setFishingList((prev) => [...prev, addedFish]);
+      } catch (error) {
+        console.error("Erro ao adicionar peixe:", error);
+      }
+
+      setNewWeight(0);
     }
   };
 

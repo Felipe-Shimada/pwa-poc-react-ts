@@ -10,10 +10,31 @@ export const fetchFish = async () => {
 };
 
 export const addFish = async (data: Partial<Fishing>) => {
-  const { data: newFish } = await axios.post(API_URL, {
-    date: data.date,
-    weight: data.weight,
-  });
+  try {
+    const { data: newFish } = await axios.post(API_URL, {
+      date: data.date,
+      weight: data.weight,
+    });
+    return newFish;
+  } catch (error: any) {
+    if (
+      !navigator.onLine ||
+      error.message.includes("Network Error") ||
+      error.code === "ERR_NETWORK"
+    ) {
+      console.warn(
+        "Você está offline. O item será adicionado localmente e enviado quando a internet voltar."
+      );
 
-  return newFish;
+      const tempId = crypto.randomUUID();
+
+      return {
+        id: tempId,
+        date: data.date,
+        weight: data.weight,
+      };
+    }
+
+    throw error;
+  }
 };

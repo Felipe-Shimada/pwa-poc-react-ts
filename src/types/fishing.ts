@@ -1,5 +1,5 @@
 export type Fishing = {
-  id: number;
+  id: string;
   date: string;
   weight: number;
 };
