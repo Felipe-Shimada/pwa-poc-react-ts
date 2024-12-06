@@ -4,7 +4,14 @@ import { Fishing } from "./types/fishing";
 import generatePDF from "./services/reportGenerator";
 
 import { initializeApp } from "firebase/app";
-import { addDoc, collection, getDocs, getFirestore } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  getFirestore,
+  initializeFirestore,
+  onSnapshot,
+  persistentLocalCache,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -18,6 +25,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
+initializeFirestore(app, { localCache: persistentLocalCache() });
+
 function App() {
   const [newWeight, setNewWeight] = useState(0);
   const [fishingList, setFishingList] = useState<Fishing[]>([]);
@@ -26,14 +35,28 @@ function App() {
   const fishingCollectionRef = collection(db, "fishing");
 
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await getDocs(fishingCollectionRef);
-      setFishingList(
-        data.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as Fishing[]
-      );
-    };
+    console.log("Setting up Firestore listener...");
 
-    fetchData();
+    const unsubscribe = onSnapshot(
+      fishingCollectionRef,
+      { includeMetadataChanges: true },
+      (snapshot) => {
+        const updatedFishingList = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as Fishing[];
+
+        setFishingList(updatedFishingList);
+
+        const source = snapshot.metadata.fromCache ? "local cache" : "server";
+        console.log(`Fishing data came from ${source}`);
+      }
+    );
+
+    return () => {
+      console.log("Cleaning up Firestore listener...");
+      unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -44,11 +67,12 @@ function App() {
         weight: newWeight,
       };
 
-      const fish = await addDoc(fishingCollectionRef, newFish);
-
-      setFishingList((prev) => [...prev, { ...newFish, id: fish.id }]);
-
-      setNewWeight(0);
+      try {
+        await addDoc(fishingCollectionRef, newFish);
+        setNewWeight(0);
+      } catch (error) {
+        console.error("Erro ao adicionar pescaria:", error);
+      }
     }
   };
 
