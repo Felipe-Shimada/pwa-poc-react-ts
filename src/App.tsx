@@ -1,20 +1,40 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { addFish, fetchFish } from "./api/fishApi";
 import { Fishing } from "./types/fishing";
 import generatePDF from "./services/reportGenerator";
+
+import { initializeApp } from "firebase/app";
+import { addDoc, collection, getDocs, getFirestore } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
+};
+
+const app = initializeApp(firebaseConfig);
 
 function App() {
   const [newWeight, setNewWeight] = useState(0);
   const [fishingList, setFishingList] = useState<Fishing[]>([]);
 
+  const db = getFirestore(app);
+  const fishingCollectionRef = collection(db, "fishing");
+
   useEffect(() => {
     const fetchData = async () => {
-      const data = await fetchFish();
-      setFishingList(data);
+      const data = await getDocs(fishingCollectionRef);
+      setFishingList(
+        data.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as Fishing[]
+      );
     };
 
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const search = async (e: { key: string }) => {
@@ -24,12 +44,9 @@ function App() {
         weight: newWeight,
       };
 
-      try {
-        const addedFish = await addFish(newFish);
-        setFishingList((prev) => [...prev, addedFish]);
-      } catch (error) {
-        console.error("Erro ao adicionar peixe:", error);
-      }
+      const fish = await addDoc(fishingCollectionRef, newFish);
+
+      setFishingList((prev) => [...prev, { ...newFish, id: fish.id }]);
 
       setNewWeight(0);
     }
