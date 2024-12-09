@@ -35,7 +35,7 @@ function App() {
   const fishingCollectionRef = collection(db, "fishing");
 
   useEffect(() => {
-    console.log("Setting up Firestore listener....");
+    console.log("Setting up Firestore listener...");
 
     const unsubscribe = onSnapshot(
       fishingCollectionRef,
